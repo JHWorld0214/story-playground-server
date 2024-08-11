@@ -36,5 +36,8 @@ out/
 ### VS Code ###
 .vscode/
 
-application.properties
-openai.properties
+### application.properties ###
+src/main/resources/application.properties
+
+### ChatGPT API Key ###
+src/main/resources/openai.properties
