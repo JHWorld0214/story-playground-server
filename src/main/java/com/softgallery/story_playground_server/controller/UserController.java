@@ -4,11 +4,12 @@ import com.softgallery.story_playground_server.dto.user.UserDTO;
 import com.softgallery.story_playground_server.service.user.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
+@RequestMapping("/user")
 public class UserController {
     private final UserService userService;
 
@@ -16,12 +17,7 @@ public class UserController {
         this.userService = userService;
     }
 
-    @GetMapping("/register")
-    public String register() {
-        return "register";
-    }
-
-    @PostMapping("/register/user")
+    @PostMapping("/register")
     public ResponseEntity<Boolean> registerNewUser(@RequestBody UserDTO userDTO) {
         return ResponseEntity.ok().body(userService.insertNewUser(userDTO));
     }
