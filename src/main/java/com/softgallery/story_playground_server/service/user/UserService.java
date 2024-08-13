@@ -20,35 +20,17 @@ public class UserService {
 
         Optional<UserEntity> user = userRepository.findByEmail(userInsertDTO.getEmail());
 
-        if(user.isPresent()) {
-            return new UserIdDTO(
-                    user.get().getUserId(),
-                    UserAgreementDTO.builder()
-                            .tosAgree(user.get().getUserAgreement().getTosAgree())
-                            .tosAgreeLog(user.get().getUserAgreement().getTosAgreeLog())
-                            .privacyPolicyAgree(user.get().getUserAgreement().getPrivacyPolicyAgree())
-                            .privacyPolicyAgreeLog(user.get().getUserAgreement().getPrivacyPolicyAgreeLog())
-                            .build()
-            );
-        }
+        if(user.isPresent()) return new UserIdDTO(user.get().getUserId());
 
-        User newUser = userRepository.save(
-                new User(
-                        userInsertDTO.getEmail(),
-                        userInsertDTO.getPicture(),
-                        userInsertDTO.getName(),
-                        userInsertDTO.getSocial()
-                )
-        );
-
-        return new UserIdResponseDTO(
-                newUser.getUserId(),
-                UserAgreementDTO.builder()
-                        .tosAgree(newUser.getUserAgreement().getTosAgree())
-                        .tosAgreeLog(newUser.getUserAgreement().getTosAgreeLog())
-                        .privacyPolicyAgree(newUser.getUserAgreement().getPrivacyPolicyAgree())
-                        .privacyPolicyAgreeLog(newUser.getUserAgreement().getPrivacyPolicyAgreeLog())
+        UserEntity newUser = userRepository.save(
+                UserEntity.builder()
+                        .email(userInsertDTO.getEmail())
+                        .name(userInsertDTO.getName())
+                        .picture(userInsertDTO.getPicture())
+                        .social(userInsertDTO.getSocial())
                         .build()
         );
+
+        return new UserIdDTO(newUser.getUserId());
     }
 }

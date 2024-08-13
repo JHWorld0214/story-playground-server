@@ -1,6 +1,7 @@
 package com.softgallery.story_playground_server.controller.user;
 
-import com.softgallery.story_playground_server.dto.user.UserDTO;
+import com.softgallery.story_playground_server.dto.UserIdDTO;
+import com.softgallery.story_playground_server.dto.UserInsertDTO;
 import com.softgallery.story_playground_server.global.common.SuccessResponse;
 import com.softgallery.story_playground_server.service.user.UserService;
 import org.springframework.http.ResponseEntity;
@@ -20,7 +21,7 @@ public class UserController {
 
     @PostMapping("/signin")
     public ResponseEntity<SuccessResponse<?>> signIn(@RequestBody UserInsertDTO userInsertDTO) {
-        UserIdResponseDTO userIdResponseDTO = userService.signIn(userInsertDTO);
+        UserIdDTO userIdResponseDTO = userService.signIn(userInsertDTO);
         return SuccessResponse.ok(userIdResponseDTO);
     }
 }
