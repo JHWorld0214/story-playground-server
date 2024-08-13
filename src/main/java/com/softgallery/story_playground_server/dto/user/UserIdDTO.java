@@ -1,4 +1,4 @@
-package com.softgallery.story_playground_server.dto;
+package com.softgallery.story_playground_server.dto.user;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;

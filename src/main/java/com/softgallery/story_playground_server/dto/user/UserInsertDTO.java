@@ -1,6 +1,6 @@
-package com.softgallery.story_playground_server.dto;
+package com.softgallery.story_playground_server.dto.user;
 
-import com.softgallery.story_playground_server.service.Social;
+import com.softgallery.story_playground_server.service.user.Social;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
