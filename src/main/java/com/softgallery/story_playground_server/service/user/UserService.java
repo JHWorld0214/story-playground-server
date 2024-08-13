@@ -1,36 +1,36 @@
 package com.softgallery.story_playground_server.service.user;
 
-import com.softgallery.story_playground_server.dto.user.UserDTO;
+import com.softgallery.story_playground_server.dto.UserIdDTO;
+import com.softgallery.story_playground_server.dto.UserInsertDTO;
 import com.softgallery.story_playground_server.entity.UserEntity;
 import com.softgallery.story_playground_server.repository.UserRepository;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
+
+@RequiredArgsConstructor
 @Service
+@Transactional
 public class UserService {
     private final UserRepository userRepository;
-    private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
-    public UserService(UserRepository userRepository, BCryptPasswordEncoder bCryptPasswordEncoder) {
-        this.userRepository = userRepository;
-        this.bCryptPasswordEncoder = bCryptPasswordEncoder;
-    }
+    public UserIdDTO signIn(UserInsertDTO userInsertDTO) {
 
-    public boolean insertNewUser(UserDTO userDTO) {
-        String username = userDTO.getUsername();
-        String password = userDTO.getPassword();
+        Optional<UserEntity> user = userRepository.findByEmail(userInsertDTO.getEmail());
 
-        boolean isExist = userRepository.existsByUsername(username);
+        if(user.isPresent()) return new UserIdDTO(user.get().getUserId());
 
-        if(isExist) {
-            return false;
-        }
+        UserEntity newUser = userRepository.save(
+                UserEntity.builder()
+                        .email(userInsertDTO.getEmail())
+                        .name(userInsertDTO.getName())
+                        .picture(userInsertDTO.getPicture())
+                        .social(userInsertDTO.getSocial())
+                        .build()
+        );
 
-        UserEntity data = new UserEntity();
-        data.setUsername(username);
-        data.setPassword(bCryptPasswordEncoder.encode(password));
-
-        userRepository.save(data);
-        return true;
+        return new UserIdDTO(newUser.getUserId());
     }
 }

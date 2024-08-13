@@ -1,82 +1,47 @@
 package com.softgallery.story_playground_server.entity;
 
-import com.softgallery.story_playground_server.service.story.Visibility;
 import jakarta.annotation.Nullable;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+
 import java.time.LocalDateTime;
-import javax.validation.constraints.NotNull;
+import java.util.List;
+
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Entity
 @Getter
-@Setter
 @NoArgsConstructor
+@AllArgsConstructor
 @Table(name="story")
 public class StoryEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long storyId;
 
-    @Column
-    @NotNull
+    @ManyToOne
+    @JoinColumn(name="user_id", nullable = false)
+    private UserEntity user;
+
+    @Column(nullable = false)
     private String title;
 
-    @Column
-    @NotNull
-    private String username;
-
-    @Column
-    @Nullable
-    private String topic;
-
-    @Column
-    @NotNull
-    private Long level;
-
-    @Column
+    @Column(nullable = false)
     private Boolean isCompleted;
 
-    @Column(length = 10000)
-    @NotNull
-    private String content;
+    @Column(nullable = false)
+    private LocalDateTime createdDate;
 
-    @Column
-    @NotNull
+    @Column(nullable = false)
     private LocalDateTime modifiedDate;
 
-    @Column
-    @Enumerated(EnumType.STRING)
-    private Visibility visibility;
+    @OneToMany(mappedBy = "story", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Column(nullable = false)
+    private List<PageEntity> pages;
 
-    @Column(columnDefinition = "BIGINT DEFAULT 0")
-    @NotNull
-    private Long likeNum;
-
-    @Column(columnDefinition = "BIGINT DEFAULT 0")
-    @NotNull
-    private Long dislikeNum;
-
-
-    public StoryEntity(Long storyId, String title, String username, String topic, Long level, Boolean isCompleted, String content, LocalDateTime modifiedDate, Visibility visibility, Long likeNum, Long dislikeNum) {
-        this.storyId = storyId;
-        this.title = title;
-        this.username = username;
-        this.topic = topic;
-        this.level = level;
-        this.isCompleted = isCompleted;
-        this.content = content;
-        this.modifiedDate = modifiedDate;
-        this.visibility = visibility;
-        this.likeNum = likeNum;
-        this.dislikeNum = dislikeNum;
+    public void changeModifiedDate() {
+        this.modifiedDate = LocalDateTime.now();
     }
 }
+
