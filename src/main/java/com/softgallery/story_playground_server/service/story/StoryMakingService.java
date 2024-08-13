@@ -219,14 +219,6 @@ public class StoryMakingService {
         return true;
     }
 
-    public List<String> findStoryByStoryId(Long storyId) {
-        Optional<StoryEntity> storyEntityOptional = storyRepository.findById(storyId);
-        if(storyEntityOptional.isEmpty()) throw new RuntimeException("No such story");
-
-        StoryDTO storyDTO = new StoryDTO(storyEntityOptional.get());
-        return StoryDTO.parseContents(storyDTO);
-    }
-
     public boolean changeStoryVisibility(Long storyId, String visibility) {
         Optional<StoryEntity> storyEntityOptional = storyRepository.findById(storyId);
         if(storyEntityOptional.isEmpty()) throw new RuntimeException("No such story");

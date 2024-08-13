@@ -3,7 +3,6 @@ package com.softgallery.story_playground_server.controller;
 import com.softgallery.story_playground_server.dto.story.StoryDTO;
 import com.softgallery.story_playground_server.dto.story.StoryReadingDTO;
 import com.softgallery.story_playground_server.service.story.StoryMakingService;
-import java.util.List;
 import java.util.Map;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -17,7 +16,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 @Controller
 @ResponseBody
-@RequestMapping("/make")
+@RequestMapping("/story/make")
 public class StoryMakingController {
     private final StoryMakingService storyMakingService;
 
@@ -32,13 +31,7 @@ public class StoryMakingController {
         return ResponseEntity.ok().body(currentStory);
     }
 
-    @GetMapping("/{storyId}")
-    public ResponseEntity<List<String>> loadStory(@RequestHeader(name = "Authorization") String userToken,
-                                                               @PathVariable Long storyId) {
-        return ResponseEntity.ok().body(storyMakingService.findStoryByStoryId(storyId));
-    }
-
-    @PostMapping("/{storyId}/append")
+    @PostMapping("/append/{storyId}")
     public ResponseEntity<StoryDTO> appendContent(@RequestHeader(name = "Authorization") String userToken,
                                                   @PathVariable Long storyId,
                                                   @RequestBody Map<String, String> newStory) {
@@ -46,19 +39,19 @@ public class StoryMakingController {
         return ResponseEntity.ok().body(updatedStory);
     }
 
-    @PostMapping("/{storyId}/resume")
+    @PostMapping("/resume/{storyId}")
     public boolean resumeStory(@PathVariable Long storyId) {
         return storyMakingService.changeStoryStateIncomplete(storyId);
     }
 
-    @PostMapping("/{storyId}/visible/{visibility}")
+    @PostMapping("/visible/{storyId}/{visibility}")
     public boolean changeVisibility(@PathVariable Long storyId,
                                     @PathVariable String visibility) {
         return storyMakingService.changeStoryVisibility(storyId, visibility);
     }
 
-    @GetMapping("/info/{id}")
-    public StoryReadingDTO getStory(@PathVariable("id") Long storyId, @RequestHeader("Authorization") String token) {
+    @GetMapping("/info/{storyId}")
+    public StoryReadingDTO getStoryInfo(@PathVariable("storyId") Long storyId, @RequestHeader("Authorization") String token) {
         return storyMakingService.getStory(storyId, token);
     }
 }
