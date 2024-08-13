@@ -1,23 +1,31 @@
 package com.softgallery.story_playground_server.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import javax.validation.constraints.NotNull;
+import com.softgallery.story_playground_server.service.Social;
+import jakarta.persistence.*;
+
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.UUID;
+
 @Entity
 @Getter
-@Setter
 @Table(name="user")
 public class UserEntity {
     @Id
-    @NotNull
-    private String username;
+    @GeneratedValue(strategy=GenerationType.UUID)
+    private UUID userId;
 
-    @Column
-    @NotNull
-    private String password;
+    @Column(nullable = false, unique = true)
+    private String email;
+
+    @Column(nullable = false)
+    private String picture;
+
+    @Column(length = 50, nullable = false)
+    private String name;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Social social;
 }
