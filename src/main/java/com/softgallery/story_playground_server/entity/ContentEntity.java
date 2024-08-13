@@ -25,9 +25,6 @@ public class ContentEntity {
     @Column(length = 1000, nullable = false)
     private String content;
 
-    @Column(nullable = false)
-    private Long pageNum;
-
     @ManyToOne
     @JoinColumn(name="page_id", nullable = false)
     private PageEntity page;

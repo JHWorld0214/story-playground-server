@@ -1,7 +1,7 @@
 package com.softgallery.story_playground_server.service.user;
 
-import com.softgallery.story_playground_server.dto.UserIdDTO;
-import com.softgallery.story_playground_server.dto.UserInsertDTO;
+import com.softgallery.story_playground_server.dto.user.UserIdDTO;
+import com.softgallery.story_playground_server.dto.user.UserInsertDTO;
 import com.softgallery.story_playground_server.entity.UserEntity;
 import com.softgallery.story_playground_server.repository.UserRepository;
 import lombok.RequiredArgsConstructor;

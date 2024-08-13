@@ -1,6 +1,6 @@
 package com.softgallery.story_playground_server.entity;
 
-import com.softgallery.story_playground_server.service.Social;
+import com.softgallery.story_playground_server.service.user.Social;
 import jakarta.persistence.*;
 
 import lombok.AllArgsConstructor;
