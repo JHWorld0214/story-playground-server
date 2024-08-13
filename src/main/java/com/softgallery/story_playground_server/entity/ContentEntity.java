@@ -1,5 +1,6 @@
 package com.softgallery.story_playground_server.entity;
 
+import com.softgallery.story_playground_server.service.user.Role;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -24,6 +25,10 @@ public class ContentEntity {
 
     @Column(length = 1000, nullable = false)
     private String content;
+
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private Role role;
 
     @ManyToOne
     @JoinColumn(name="page_id", nullable = false)

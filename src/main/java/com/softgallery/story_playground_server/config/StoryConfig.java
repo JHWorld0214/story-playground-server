@@ -1,4 +1,4 @@
-package com.softgallery.story_playground_server.service.story;
+package com.softgallery.story_playground_server.config;
 
 public class StoryConfig {
     public static final String DEFAULT_TITLE = "No Title";
