@@ -39,4 +39,9 @@ public class StoryController {
     public ResponseEntity<SuccessResponse<?>> receiveMessage(@PathVariable("storyId") Long storyId) {
         return SuccessResponse.ok(storyService.receiveMessage(storyId));
     }
+
+    @GetMapping("/content/receive/image/{storyId}")
+    public ResponseEntity<SuccessResponse<?>> receiveImage(@PathVariable("storyId") Long storyId) {
+        return SuccessResponse.ok(storyService.generateImage(storyId));
+    }
 }

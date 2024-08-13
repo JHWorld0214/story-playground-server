@@ -10,7 +10,7 @@ public class WebClientConfig {
     @Bean
     public WebClient webClient() {
         return WebClient.builder()
-                .baseUrl("https://api.openai.com/v1")
+                .baseUrl(GptConfig.BASE_URL)
                 .defaultHeader("Content-Type", "application/json")
                 .build();
     }

@@ -4,6 +4,7 @@ import com.softgallery.story_playground_server.config.GptConfig;
 import com.softgallery.story_playground_server.config.StoryConfig;
 import com.softgallery.story_playground_server.dto.content.ContentInsertDTO;
 import com.softgallery.story_playground_server.dto.content.ContentOnlyDTO;
+import com.softgallery.story_playground_server.dto.gpt.DalleInsertDTO;
 import com.softgallery.story_playground_server.dto.gpt.GptRequestDTO;
 import com.softgallery.story_playground_server.dto.page.PageIdDTO;
 import com.softgallery.story_playground_server.dto.story.StoryIdDTO;
@@ -129,7 +130,7 @@ public class StoryService {
         String llmResult;
         try {
             llmResult = webClient.post()
-                    .uri("/chat/completions")
+                    .uri(GptConfig.GPT_URI)
                     .header(GptConfig.AUTHORIZATION, GptConfig.Bearer + apiKey)
                     .bodyValue(gptRequestDTO)
                     .retrieve()
@@ -148,5 +149,21 @@ public class StoryService {
 
         ContentEntity savedContent = contentRepository.save(content);
         return new ContentOnlyDTO(savedContent.getContentId(), savedContent.getContent());
+    }
+
+    public String generateImage(Long storyId) {
+        DalleInsertDTO dalleInsertDTO = new DalleInsertDTO(GptConfig.DALLE_PROMPT, 1L, GptConfig.DALLE_SIZE);
+
+        try {
+            return webClient.post()
+                    .uri(GptConfig.DALLE_URI)
+                    .header(GptConfig.AUTHORIZATION, GptConfig.Bearer + apiKey)
+                    .bodyValue(dalleInsertDTO)
+                    .retrieve()
+                    .bodyToMono(String.class)
+                    .block();
+        } catch (WebClientResponseException e) {
+            return "Error: " + e.getResponseBodyAsString();
+        }
     }
 }
