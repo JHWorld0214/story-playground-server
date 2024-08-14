@@ -18,7 +18,11 @@ public class SecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/", "/example", "dontopen/**", "/dontopen/visitor/submit", "/api/story/**").permitAll()
+                        .requestMatchers(
+                                "/", "/example", "dontopen/**", "/dontopen/visitor/submit", // test apis
+                                "/api/story/**",                           // service apis
+                                "/swagger-ui/**", "/v3/api-docs/**"      // swagger apis
+                                ).permitAll()
                         .anyRequest().authenticated()
                 )
                 .formLogin(withDefaults())
