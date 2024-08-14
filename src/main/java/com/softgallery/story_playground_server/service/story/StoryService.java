@@ -2,6 +2,7 @@ package com.softgallery.story_playground_server.service.story;
 
 import com.softgallery.story_playground_server.config.GptConfig;
 import com.softgallery.story_playground_server.config.StoryConfig;
+import com.softgallery.story_playground_server.config.WebClientConfig;
 import com.softgallery.story_playground_server.dto.content.ContentInsertDTO;
 import com.softgallery.story_playground_server.dto.content.ContentOnlyDTO;
 import com.softgallery.story_playground_server.dto.gpt.DalleInsertDTO;
@@ -20,6 +21,9 @@ import com.softgallery.story_playground_server.repository.story.StoryRepository;
 import com.softgallery.story_playground_server.service.user.Role;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -62,8 +66,10 @@ public class StoryService {
         return content.getContentId();
     }
 
-    public StoryIdDTO makeNewStory(UUID userId) {
-        Optional<UserEntity> safeUser = userRepository.findById(userId);
+    public StoryIdDTO makeNewStory() {
+        String userEmail = WebClientConfig.getCurrentUserEmail();
+
+        Optional<UserEntity> safeUser = userRepository.findByEmail(userEmail);
         if(safeUser.isEmpty()) throw new EntityNotFoundException();
 
         StoryEntity storyEntity = storyRepository.save(
@@ -79,8 +85,9 @@ public class StoryService {
         return new StoryIdDTO(storyEntity.getStoryId());
     }
 
-    public PageIdDTO makeNewPage(UUID userId, StoryIdDTO storyIdDTO) {
-        Optional<UserEntity> safeUser = userRepository.findById(userId);
+    public PageIdDTO makeNewPage(StoryIdDTO storyIdDTO) {
+        String userEmail = WebClientConfig.getCurrentUserEmail();
+        Optional<UserEntity> safeUser = userRepository.findByEmail(userEmail);
         if(safeUser.isEmpty()) throw new EntityNotFoundException();
 
         Optional<StoryEntity> safeStory = storyRepository.findById(storyIdDTO.getStoryId());
@@ -88,8 +95,9 @@ public class StoryService {
 
         Long currPageIndex=-1L;
         Optional<PageEntity> safeLargestPage = pageRepository.findFirstByStoryOrderByPageIndexDesc(safeStory.get());
+
         if(safeLargestPage.isEmpty()) currPageIndex = 1L;
-        else currPageIndex = safeLargestPage.get().getPageIndex();
+        else currPageIndex = safeLargestPage.get().getPageIndex()+1;
 
         PageEntity pageEntity = pageRepository.save(
                 PageEntity.builder()
