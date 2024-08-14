@@ -116,8 +116,6 @@ public class StoryService {
             contentEntities.addAll(contents);
         }
 
-        System.out.println(apiKey);
-
         GptRequestDTO gptRequestDTO = GptRequestDTO.builder()
                 .model(GptConfig.DEFAULT_MODEL)
                 .messages(
