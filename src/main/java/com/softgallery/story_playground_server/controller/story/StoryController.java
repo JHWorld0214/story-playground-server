@@ -16,16 +16,15 @@ import java.util.UUID;
 @RequestMapping("/api/story")
 public class StoryController {
     private final StoryService storyService;
-    private final UUID userId = UUID.fromString("1ca4ecb3-112a-4122-b9f0-1c7d96cd7940");
 
     @PostMapping("/generation")
     public ResponseEntity<SuccessResponse<?>> makeNewStory() {
-        return SuccessResponse.ok(storyService.makeNewStory(userId));
+        return SuccessResponse.ok(storyService.makeNewStory());
     }
 
     @PostMapping("/page/generation")
     public ResponseEntity<SuccessResponse<?>> makeNewPage(@RequestBody StoryIdDTO storyIdDTO) {
-        return SuccessResponse.ok(storyService.makeNewPage(userId, storyIdDTO));
+        return SuccessResponse.ok(storyService.makeNewPage(storyIdDTO));
     }
 
     @PostMapping("/content/send")
