@@ -1,5 +1,6 @@
 package com.softgallery.story_playground_server.service.auth;
 
+import com.softgallery.story_playground_server.dto.session.SessionIdDTO;
 import com.softgallery.story_playground_server.entity.UserEntity;
 import com.softgallery.story_playground_server.repository.UserRepository;
 import com.softgallery.story_playground_server.service.user.Social;
@@ -35,7 +36,7 @@ public class OAuth2Service {
     @Value("${spring.security.oauth2.client.registration.google.redirect-uri}")
     private String redirectUri;
 
-    public void authenticateUserWithGoogle(String authorizationCode, HttpServletRequest request) {
+    public SessionIdDTO authenticateUserWithGoogle(String authorizationCode, HttpServletRequest request) {
         // 1. Authorization Code를 사용해 액세스 토큰을 요청
         String accessToken = getAccessToken(authorizationCode);
 
@@ -71,13 +72,13 @@ public class OAuth2Service {
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        System.out.println("runned");
 
         // 5. 세션 생성 및 세션 ID 출력
         HttpSession session = request.getSession(); // 세션 생성 또는 기존 세션 반환
         session.setAttribute("user", oAuth2User); // 세션에 사용자 정보 저장
         String sessionId = session.getId(); // 세션 ID 가져오기
-        System.out.println("Session ID: " + sessionId); // 세션 ID 출력
+
+        return new SessionIdDTO(sessionId);
     }
 
     private String getAccessToken(String authorizationCode) {
