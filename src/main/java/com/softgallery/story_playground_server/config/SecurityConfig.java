@@ -22,7 +22,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(
                                 "/", "/example", "dontopen/**", "/dontopen/visitor/submit", // 테스트 API들
-                                "/swagger-ui/**", "/v3/api-docs/**"        // 서비스 및 Swagger API들
+                                "/swagger-ui/**", "/v3/api-docs/**",        // 서비스 및 Swagger API들
+                                "/code", "/api/user/info"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )

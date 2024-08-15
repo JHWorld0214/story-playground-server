@@ -19,6 +19,7 @@ import com.softgallery.story_playground_server.repository.story.ContentRepositor
 import com.softgallery.story_playground_server.repository.story.PageRepository;
 import com.softgallery.story_playground_server.repository.story.StoryRepository;
 import com.softgallery.story_playground_server.service.user.Role;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
@@ -66,8 +67,8 @@ public class StoryService {
         return content.getContentId();
     }
 
-    public StoryIdDTO makeNewStory() {
-        String userEmail = WebClientConfig.getCurrentUserEmail();
+    public StoryIdDTO makeNewStory(HttpServletRequest request) {
+        String userEmail = WebClientConfig.getCurrentUserEmail(request);
 
         Optional<UserEntity> safeUser = userRepository.findByEmail(userEmail);
         if(safeUser.isEmpty()) throw new EntityNotFoundException();
@@ -85,8 +86,8 @@ public class StoryService {
         return new StoryIdDTO(storyEntity.getStoryId());
     }
 
-    public PageIdDTO makeNewPage(StoryIdDTO storyIdDTO) {
-        String userEmail = WebClientConfig.getCurrentUserEmail();
+    public PageIdDTO makeNewPage(StoryIdDTO storyIdDTO, HttpServletRequest request) {
+        String userEmail = WebClientConfig.getCurrentUserEmail(request);
         Optional<UserEntity> safeUser = userRepository.findByEmail(userEmail);
         if(safeUser.isEmpty()) throw new EntityNotFoundException();
 

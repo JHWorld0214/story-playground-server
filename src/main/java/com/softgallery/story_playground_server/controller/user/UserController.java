@@ -4,6 +4,7 @@ import com.softgallery.story_playground_server.dto.user.UserIdDTO;
 import com.softgallery.story_playground_server.dto.user.UserInsertDTO;
 import com.softgallery.story_playground_server.global.common.SuccessResponse;
 import com.softgallery.story_playground_server.service.user.UserService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,7 +25,7 @@ public class UserController {
     }
 
     @GetMapping("/info")
-    public ResponseEntity<SuccessResponse<?>> getUserInfo() {
-        return SuccessResponse.ok(userService.getUserInfo());
+    public ResponseEntity<SuccessResponse<?>> getUserInfo(HttpServletRequest request) {
+        return SuccessResponse.ok(userService.getUserInfo(request));
     }
 }

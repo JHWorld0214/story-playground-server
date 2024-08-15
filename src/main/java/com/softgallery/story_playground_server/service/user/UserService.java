@@ -7,6 +7,7 @@ import com.softgallery.story_playground_server.dto.user.UserInsertDTO;
 import com.softgallery.story_playground_server.entity.UserEntity;
 import com.softgallery.story_playground_server.global.error.exception.EntityNotFoundException;
 import com.softgallery.story_playground_server.repository.UserRepository;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,8 +39,8 @@ public class UserService {
         return new UserIdDTO(newUser.getUserId());
     }
 
-    public UserInfoDTO getUserInfo() {
-        String userEmail = WebClientConfig.getCurrentUserEmail();
+    public UserInfoDTO getUserInfo(HttpServletRequest request) {
+        String userEmail = WebClientConfig.getCurrentUserEmail(request);
 
         Optional<UserEntity> safeUser = userRepository.findByEmail(userEmail);
         if(safeUser.isEmpty()) throw new EntityNotFoundException();
