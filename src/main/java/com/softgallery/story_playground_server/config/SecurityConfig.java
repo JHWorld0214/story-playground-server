@@ -20,7 +20,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(
                                 "/", "/example", "dontopen/**", "/dontopen/visitor/submit", // test apis
-                                "/api/story/**",                           // service apis
+                                "/api/story/**", "/api/voice/**",        // service apis
                                 "/swagger-ui/**", "/v3/api-docs/**"      // swagger apis
                                 ).permitAll()
                         .anyRequest().authenticated()
