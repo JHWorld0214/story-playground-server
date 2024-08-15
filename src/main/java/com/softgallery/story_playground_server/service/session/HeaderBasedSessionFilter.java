@@ -23,11 +23,23 @@ public class HeaderBasedSessionFilter extends OncePerRequestFilter {
         // 헤더에서 세션 ID를 추출
         String sessionId = request.getHeader("Authorization");
 
+        if (sessionId != null && sessionId.startsWith("Bearer ")) {
+            sessionId = sessionId.replaceFirst("Bearer ", "");
+        }
+
+        System.out.println("curr sessionId : " + sessionId);
+
         if (sessionId != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             // 세션에서 SecurityContext 가져오기
             HttpSession session = request.getSession(false);
+
+            String savedSessionId = session==null ? "null" : session.getId();
+            System.out.println("saved session : " + savedSessionId);
+
             if (session != null && sessionId.equals(session.getId())) {
+                System.out.println("실행됨1");
                 SecurityContext securityContext = (SecurityContext) session.getAttribute("SPRING_SECURITY_CONTEXT");
+                System.out.println("securityContext: " + securityContext);
 
                 if (securityContext != null) {
                     Authentication authentication = securityContext.getAuthentication();

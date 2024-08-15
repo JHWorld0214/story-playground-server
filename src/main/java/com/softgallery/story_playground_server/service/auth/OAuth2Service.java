@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -24,6 +25,9 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -44,20 +48,20 @@ public class OAuth2Service {
     @Value("${spring.security.oauth2.client.registration.google.redirect-uri}")
     private String redirectUri;
 
-    private final Map<String, Map<String, Object>> sessions = new HashMap<>();
-
-    public SessionIdDTO authenticateUserWithGoogle(String authorizationCode) {
-        // 1. Authorization Code를 사용해 액세스 토큰을 요청
+    public SessionIdDTO authenticateUserWithGoogle(String authorizationCode, HttpServletRequest request) {
+        System.out.println("runned");
         String accessToken = getAccessToken(authorizationCode);
+        System.out.println("access token out : " + accessToken);
 
-        // 2. 액세스 토큰을 사용해 사용자 정보 요청
         Map<String, Object> userInfo = getUserInfo(accessToken);
 
         String email = (String) userInfo.get("email");
         String name = (String) userInfo.get("name");
         String picture = (String) userInfo.get("picture");
 
-        // 3. 사용자를 DB에 저장 (이미 존재하지 않는 경우)
+        System.out.println("user email" + email);
+        System.out.println("username" + name);
+
         if (!userRepository.existsByEmail(email)) {
             userRepository.save(UserEntity.builder()
                     .name(name)
@@ -67,91 +71,68 @@ public class OAuth2Service {
                     .build());
         }
 
-        // 4. OAuth2User 객체 생성 및 세션에 저장
         OAuth2User oAuth2User = new DefaultOAuth2User(
-                null, // 권한 (추가 가능)
-                userInfo, // 사용자 정보
-                "email" // 키 (사용자 식별을 위한 속성)
+                null,
+                userInfo,
+                "email"
         );
 
         Authentication authentication = new OAuth2AuthenticationToken(
                 oAuth2User,
-                null, // 권한
+                null,
                 "google"
         );
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        String sessionId = UUID.randomUUID().toString();
-        sessions.put(sessionId, userInfo);
-
-//        // 5. 세션 생성 및 세션 ID 출력
-//        HttpSession session = request.getSession(); // 세션 생성 또는 기존 세션 반환
-//        session.setAttribute("user", oAuth2User); // 세션에 사용자 정보 저장
-//        String sessionId = session.getId(); // 세션 ID 가져오기
+        HttpSession session = request.getSession(true);
+        session.setAttribute("user", oAuth2User);
+        session.setAttribute("SPRING_SECURITY_CONTEXT", SecurityContextHolder.getContext());
+        String sessionId = session.getId();
 
         return new SessionIdDTO(sessionId);
     }
 
-    public String getSessionUserEmail(String sessionId) {
-        Map<String, Object> userInfo = sessions.get(sessionId);
-
-        if(userInfo==null) throw new UnauthorizedException();
-
-        return (String) userInfo.get("email");
-    }
-
     private String getAccessToken(String authorizationCode) {
-        RestTemplate restTemplate = new RestTemplate();
-        String tokenUri = "https://oauth2.googleapis.com/token";
+        String decodedCode;
+        try {
+            decodedCode = URLDecoder.decode(authorizationCode, StandardCharsets.UTF_8.name());
+        } catch (UnsupportedEncodingException e) {
+            // UTF-8이 지원되지 않는 경우는 사실상 없으므로 런타임 예외로 처리
+            throw new RuntimeException("UTF-8 encoding is not supported", e);
+        }
+
+        WebClient webClient = WebClient.builder()
+                .baseUrl("https://oauth2.googleapis.com")
+                .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+                .build();
 
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
-        params.add("code", authorizationCode);
+        params.add("code", decodedCode);
         params.add("client_id", clientId);
         params.add("client_secret", clientSecret);
         params.add("redirect_uri", redirectUri);
         params.add("grant_type", "authorization_code");
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-
-        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
-        Map<String, Object> tokenResponse = restTemplate.postForObject(tokenUri, request, Map.class);
-
-        return (String) tokenResponse.get("access_token");
-
-//        // Google OAuth 서버에서 액세스 토큰을 가져옵니다.
-//        Map<String, String> response = this.webClient.post()
-//                .uri("https://oauth2.googleapis.com/token")
-//                .bodyValue(Map.of(
-//                        "client_id", clientId,
-//                        "client_secret", clientSecret,
-//                        "code", authorizationCode,
-//                        "grant_type", "authorization_code",
-//                        "redirect_uri", redirectUri
-//                ))
-//                .retrieve()
-//                .onStatus(status -> status.is4xxClientError(), clientResponse ->
-//                        clientResponse.bodyToMono(String.class)
-//                                .map(error -> new RuntimeException("4xx error: " + error))
-//                )
-//                .onStatus(status -> status.is5xxServerError(), clientResponse ->
-//                        clientResponse.bodyToMono(String.class)
-//                                .map(error -> new RuntimeException("5xx error: " + error))
-//                )
-//                .bodyToMono(Map.class)
-//                .block();
-//
-//        return response.get("access_token");
-    }
-
-    private Map<String, Object> getUserInfo(String accessToken) {
-        // 액세스 토큰을 사용해 Google 사용자 정보를 요청합니다.
-        return this.webClient.get()
-                .uri("https://www.googleapis.com/oauth2/v2/userinfo")
-                .headers(headers -> headers.setBearerAuth(accessToken))
+        Map<String, Object> response = webClient.post()
+                .uri("/token")
+                .bodyValue(params)
                 .retrieve()
                 .bodyToMono(Map.class)
                 .block();
+
+        return (String) response.get("access_token");
+    }
+
+    private Map<String, Object> getUserInfo(String accessToken) {
+        RestTemplate restTemplate = new RestTemplate();
+        String infoUri = "https://www.googleapis.com/oauth2/v2/userinfo";
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(accessToken);
+
+        HttpEntity<Void> request = new HttpEntity<>(headers);
+
+        return restTemplate.exchange(infoUri, HttpMethod.GET, request, Map.class).getBody();
     }
 }

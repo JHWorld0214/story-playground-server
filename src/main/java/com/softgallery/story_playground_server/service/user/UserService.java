@@ -42,8 +42,10 @@ public class UserService {
         return new UserIdDTO(newUser.getUserId());
     }
 
-    public UserInfoDTO getUserInfo(String sessionId) {
-        String userEmail = oAuth2Service.getSessionUserEmail(sessionId);
+    public UserInfoDTO getUserInfo() {
+        String userEmail = WebClientConfig.getCurrentUserEmail();
+
+        System.out.println("user email!" + userEmail);
 
         Optional<UserEntity> safeUser = userRepository.findByEmail(userEmail);
         if(safeUser.isEmpty()) throw new EntityNotFoundException();
