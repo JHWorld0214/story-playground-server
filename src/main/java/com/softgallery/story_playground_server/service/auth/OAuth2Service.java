@@ -125,6 +125,7 @@ public class OAuth2Service {
     }
 
     private Map<String, Object> getUserInfo(String accessToken) {
+        System.out.println("access token: " + accessToken);
         RestTemplate restTemplate = new RestTemplate();
         String infoUri = "https://www.googleapis.com/oauth2/v2/userinfo";
 
