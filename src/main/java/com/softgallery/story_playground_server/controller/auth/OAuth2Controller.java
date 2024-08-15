@@ -20,9 +20,9 @@ public class OAuth2Controller {
     private final OAuth2Service authService;
 
     @PostMapping("/code")
-    public ResponseEntity<SuccessResponse<?>> handleGoogleLogin(@RequestBody Map<String, String> request, HttpServletRequest httpRequest) {
+    public ResponseEntity<SuccessResponse<?>> handleGoogleLogin(@RequestBody Map<String, String> request) {
         String authorizationCode = request.get("code");
-        SessionIdDTO sessionIdDTO = authService.authenticateUserWithGoogle(authorizationCode, httpRequest);
+        SessionIdDTO sessionIdDTO = authService.authenticateUserWithGoogle(authorizationCode);
         return SuccessResponse.ok(sessionIdDTO);
     }
 }

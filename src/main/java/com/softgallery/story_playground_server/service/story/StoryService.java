@@ -67,8 +67,8 @@ public class StoryService {
         return content.getContentId();
     }
 
-    public StoryIdDTO makeNewStory(HttpServletRequest request) {
-        String userEmail = WebClientConfig.getCurrentUserEmail(request);
+    public StoryIdDTO makeNewStory(HttpServletRequest request, String sessionId) {
+        String userEmail = WebClientConfig.getCurrentUserEmail();
 
         Optional<UserEntity> safeUser = userRepository.findByEmail(userEmail);
         if(safeUser.isEmpty()) throw new EntityNotFoundException();
@@ -86,8 +86,8 @@ public class StoryService {
         return new StoryIdDTO(storyEntity.getStoryId());
     }
 
-    public PageIdDTO makeNewPage(StoryIdDTO storyIdDTO, HttpServletRequest request) {
-        String userEmail = WebClientConfig.getCurrentUserEmail(request);
+    public PageIdDTO makeNewPage(StoryIdDTO storyIdDTO, HttpServletRequest request, String sessionId) {
+        String userEmail = WebClientConfig.getCurrentUserEmail();
         Optional<UserEntity> safeUser = userRepository.findByEmail(userEmail);
         if(safeUser.isEmpty()) throw new EntityNotFoundException();
 

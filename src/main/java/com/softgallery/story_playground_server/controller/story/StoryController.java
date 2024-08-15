@@ -19,13 +19,13 @@ public class StoryController {
     private final StoryService storyService;
 
     @PostMapping("/generation")
-    public ResponseEntity<SuccessResponse<?>> makeNewStory(HttpServletRequest request) {
-        return SuccessResponse.ok(storyService.makeNewStory(request));
+    public ResponseEntity<SuccessResponse<?>> makeNewStory(HttpServletRequest request, @RequestHeader("session_Id") String sessionId) {
+        return SuccessResponse.ok(storyService.makeNewStory(request, sessionId));
     }
 
     @PostMapping("/page/generation")
-    public ResponseEntity<SuccessResponse<?>> makeNewPage(@RequestBody StoryIdDTO storyIdDTO, HttpServletRequest request) {
-        return SuccessResponse.ok(storyService.makeNewPage(storyIdDTO, request));
+    public ResponseEntity<SuccessResponse<?>> makeNewPage(@RequestBody StoryIdDTO storyIdDTO, HttpServletRequest request, @RequestHeader("session_Id") String sessionId) {
+        return SuccessResponse.ok(storyService.makeNewPage(storyIdDTO, request, sessionId));
     }
 
     @PostMapping("/content/send")

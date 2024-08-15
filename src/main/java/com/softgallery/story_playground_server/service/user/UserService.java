@@ -7,10 +7,12 @@ import com.softgallery.story_playground_server.dto.user.UserInsertDTO;
 import com.softgallery.story_playground_server.entity.UserEntity;
 import com.softgallery.story_playground_server.global.error.exception.EntityNotFoundException;
 import com.softgallery.story_playground_server.repository.UserRepository;
+import com.softgallery.story_playground_server.service.auth.OAuth2Service;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.RequestHeader;
 
 import java.util.Optional;
 
@@ -19,6 +21,7 @@ import java.util.Optional;
 @Transactional
 public class UserService {
     private final UserRepository userRepository;
+    private final OAuth2Service oAuth2Service;
 
     // no use maybe
     public UserIdDTO signIn(UserInsertDTO userInsertDTO) {
@@ -39,8 +42,8 @@ public class UserService {
         return new UserIdDTO(newUser.getUserId());
     }
 
-    public UserInfoDTO getUserInfo(HttpServletRequest request) {
-        String userEmail = WebClientConfig.getCurrentUserEmail(request);
+    public UserInfoDTO getUserInfo(String sessionId) {
+        String userEmail = oAuth2Service.getSessionUserEmail(sessionId);
 
         Optional<UserEntity> safeUser = userRepository.findByEmail(userEmail);
         if(safeUser.isEmpty()) throw new EntityNotFoundException();

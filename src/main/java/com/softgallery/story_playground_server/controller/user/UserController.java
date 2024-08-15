@@ -25,7 +25,8 @@ public class UserController {
     }
 
     @GetMapping("/info")
-    public ResponseEntity<SuccessResponse<?>> getUserInfo(HttpServletRequest request) {
-        return SuccessResponse.ok(userService.getUserInfo(request));
+    public ResponseEntity<SuccessResponse<?>> getUserInfo(@RequestHeader("Authorization") String sessionId) {
+        System.out.println(sessionId);
+        return SuccessResponse.ok(userService.getUserInfo(sessionId));
     }
 }

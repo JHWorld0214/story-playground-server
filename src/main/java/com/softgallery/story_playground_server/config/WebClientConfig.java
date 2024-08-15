@@ -2,8 +2,6 @@ package com.softgallery.story_playground_server.config;
 
 import com.softgallery.story_playground_server.global.error.exception.EntityNotFoundException;
 import com.softgallery.story_playground_server.service.user.UserService;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
 import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -24,26 +22,24 @@ public class WebClientConfig {
 
     public static OAuth2User getOAuth2User() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null) {
+            System.out.println("Authentication is null");
+        } else {
+            System.out.println("Authentication principal: " + authentication.getPrincipal());
+        }
 
-        if(authentication != null && authentication.getPrincipal() instanceof OAuth2User) {
+        if (authentication != null && authentication.getPrincipal() instanceof OAuth2User) {
             return (OAuth2User) authentication.getPrincipal();
         }
         return null;
     }
 
-    public static String getCurrentUserEmail(HttpServletRequest request) {
-        HttpSession session = request.getSession(false);
-        if (session == null) {
-            throw new EntityNotFoundException();
-        }
 
-        OAuth2User oAuth2User = (OAuth2User) session.getAttribute("user"); // 세션에 저장된 사용자 정보 가져오기
+    public static String getCurrentUserEmail() {
+        OAuth2User oAuth2User = getOAuth2User();
 
-        if (oAuth2User == null) {
-            throw new EntityNotFoundException();
-        }
+        if(oAuth2User==null) throw new EntityNotFoundException();
 
-        return oAuth2User.getAttribute("email"); // 이메일 정보 반환
+        return oAuth2User.getAttribute("email");
     }
 }
-
