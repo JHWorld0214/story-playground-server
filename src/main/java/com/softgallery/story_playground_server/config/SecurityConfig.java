@@ -21,8 +21,9 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(
-                                "/", "/example", "dontopen/**", "/dontopen/visitor/submit", // 테스트 API들
-                                "/swagger-ui/**", "/v3/api-docs/**"        // 서비스 및 Swagger API들
+                                "/", "/example", "dontopen/**", "/dontopen/visitor/submit", // test apis
+                                "/api/story/**", "/api/voice/**",        // service apis
+                                "/swagger-ui/**", "/v3/api-docs/**"      // swagger apis
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
