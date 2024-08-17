@@ -1,56 +1,63 @@
 package com.softgallery.story_playground_server.service.session;
 
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.SignatureException;
+import io.jsonwebtoken.UnsupportedJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
-import org.springframework.security.web.authentication.session.SessionAuthenticationException;
+import org.springframework.core.env.Environment;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
-public class HeaderBasedSessionFilter extends OncePerRequestFilter {
+public class JwtValidationFilter extends OncePerRequestFilter {
+
+    private final Environment environment;
+
+    public JwtValidationFilter(Environment environment) {
+        this.environment = environment;
+    }
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
-        // 헤더에서 세션 ID를 추출
-        String sessionId = request.getHeader("Authorization");
+        String authHeader = request.getHeader("Authorization");
+        String token = null;
 
-        if (sessionId != null && sessionId.startsWith("Bearer ")) {
-            sessionId = sessionId.replaceFirst("Bearer ", "");
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            token = authHeader.replaceFirst("Bearer ", "");
         }
 
-        System.out.println("curr sessionId : " + sessionId);
+        if (token != null) {
+            try {
+                // 프로퍼티 파일에서 비밀 키 가져오기
+                String secretKey = environment.getProperty("jwt.secret");
 
-        if (sessionId != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            // 세션에서 SecurityContext 가져오기
-            HttpSession session = request.getSession(false);
+                // JWT 토큰 검증
+                Jwts.parser()
+                        .setSigningKey(secretKey.getBytes())
+                        .parseClaimsJws(token); // 유효하지 않다면 예외 발생
 
-            String savedSessionId = session==null ? "null" : session.getId();
-            System.out.println("saved session : " + savedSessionId);
+                // 토큰이 유효하다면 필터 체인 진행
+                filterChain.doFilter(request, response);
 
-            if (session != null && sessionId.equals(session.getId())) {
-                System.out.println("실행됨1");
-                SecurityContext securityContext = (SecurityContext) session.getAttribute("SPRING_SECURITY_CONTEXT");
-                System.out.println("securityContext: " + securityContext);
-
-                if (securityContext != null) {
-                    Authentication authentication = securityContext.getAuthentication();
-                    if (authentication != null) {
-                        // SecurityContextHolder에 인증 정보 설정
-                        SecurityContextHolder.getContext().setAuthentication(authentication);
-                    }
-                }
+            } catch (ExpiredJwtException e) {
+                // 토큰 만료 예외 처리
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.getWriter().write("Token has expired.");
+            } catch (UnsupportedJwtException | MalformedJwtException | SignatureException | IllegalArgumentException e) {
+                // JWT 형식 오류 또는 서명 오류 예외 처리
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                response.getWriter().write("Invalid JWT token.");
             }
+        } else {
+            // 토큰이 없으면 기본 요청 처리
+            filterChain.doFilter(request, response);
         }
-
-        filterChain.doFilter(request, response);
     }
 }

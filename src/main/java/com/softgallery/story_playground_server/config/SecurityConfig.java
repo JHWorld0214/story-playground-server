@@ -9,6 +9,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.context.SecurityContextHolderFilter;
+import org.springframework.security.web.context.SecurityContextPersistenceFilter;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -16,9 +18,6 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @AllArgsConstructor
 @Getter
 public class SecurityConfig {
-
-//    private final CustomAuthenticationSuccessHandler successHandler;
-
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -33,9 +32,8 @@ public class SecurityConfig {
                 )
                 .oauth2Login(oauth2 -> oauth2
                         .loginPage("/oauth2/authorization/google")
-//                        .successHandler(successHandler) // 인증 성공 핸들러 설정
                 )
-                .addFilterBefore(new HeaderBasedSessionFilter(), UsernamePasswordAuthenticationFilter.class); // 커스텀 필터 등록
+                .addFilterBefore(new HeaderBasedSessionFilter(), SecurityContextHolderFilter.class); // 커스텀 필터 등록
 
 
         return http.build();

@@ -5,6 +5,10 @@ import com.softgallery.story_playground_server.entity.UserEntity;
 import com.softgallery.story_playground_server.global.error.exception.UnauthorizedException;
 import com.softgallery.story_playground_server.repository.UserRepository;
 import com.softgallery.story_playground_server.service.user.Social;
+import io.jsonwebtoken.*;
+import io.jsonwebtoken.impl.DefaultClaims;
+import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -25,12 +29,13 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
+import javax.security.auth.login.LoginException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @Transactional
@@ -47,6 +52,19 @@ public class OAuth2Service {
 
     @Value("${spring.security.oauth2.client.registration.google.redirect-uri}")
     private String redirectUri;
+
+    @Value("${jwt.expiration}")
+    private long expireTimeMilliSecond;
+
+    @Value("${jwt.secret}")
+    private String secretKey;
+
+    private static String staticSecretKey;
+
+    @PostConstruct
+    public void init() {
+        staticSecretKey = secretKey;
+    }
 
     public SessionIdDTO authenticateUserWithGoogle(String authorizationCode, HttpServletRequest request) {
         System.out.println("runned");
@@ -71,26 +89,10 @@ public class OAuth2Service {
                     .build());
         }
 
-        OAuth2User oAuth2User = new DefaultOAuth2User(
-                null,
-                userInfo,
-                "email"
-        );
+        Optional<UserEntity> safeUser = userRepository.findByEmail(email);
+        if(safeUser.isEmpty()) throw new RuntimeException("No User or occur error during insert email " + email);
 
-        Authentication authentication = new OAuth2AuthenticationToken(
-                oAuth2User,
-                null,
-                "google"
-        );
-
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-
-        HttpSession session = request.getSession(true);
-        session.setAttribute("user", oAuth2User);
-        session.setAttribute("SPRING_SECURITY_CONTEXT", SecurityContextHolder.getContext());
-        String sessionId = session.getId();
-
-        return new SessionIdDTO(sessionId);
+        return new SessionIdDTO(generateToken(safeUser.get().getUserId()));
     }
 
     private String getAccessToken(String authorizationCode) {
@@ -136,4 +138,37 @@ public class OAuth2Service {
 
         return restTemplate.exchange(infoUri, HttpMethod.GET, request, Map.class).getBody();
     }
+
+    public String generateToken(final UUID id) {
+        // 현재 시간과 만료 시간 설정
+        final Date now = new Date();
+        final Date expiredDate = new Date(now.getTime() + expireTimeMilliSecond);
+
+        SecretKey noStringSecret = new SecretKeySpec(staticSecretKey.getBytes(StandardCharsets.UTF_8), Jwts.SIG.HS256.key().build().getAlgorithm());
+
+        // JWT Claims 설정 및 생성
+        return Jwts.builder()
+                .claim("userId", id.toString()) // 사용자 ID 클레임 추가
+                .subject(id.toString())
+                .issuedAt(now) // 발행 시간 설정
+                .expiration(expiredDate) // 만료 시간 설정
+                .signWith(noStringSecret) // 서명 키 설정 (Algorithm 자동 선택)
+                .compact(); // 최종적으로 JWT 토큰을 생성
+    }
+
+    public static String getOnlyToken(String token) {
+        return token.split(" ")[1];
+    }
+
+    public static Boolean isExpired(String token) {
+        SecretKey noStringSecret = new SecretKeySpec(staticSecretKey.getBytes(StandardCharsets.UTF_8), Jwts.SIG.HS256.key().build().getAlgorithm());
+        return Jwts.parser().verifyWith(noStringSecret).build().parseSignedClaims(token).getPayload().getExpiration().before(new Date());
+    }
+
+    public static UUID extractMemberId(String token) {
+        SecretKey noStringSecret = new SecretKeySpec(staticSecretKey.getBytes(StandardCharsets.UTF_8), Jwts.SIG.HS256.key().build().getAlgorithm());
+        String userIdString = Jwts.parser().verifyWith(noStringSecret).build().parseSignedClaims(token).getPayload().get("userId", String.class);
+        return UUID.fromString(userIdString);
+    }
+
 }

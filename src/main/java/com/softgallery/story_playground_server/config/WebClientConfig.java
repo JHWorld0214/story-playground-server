@@ -1,8 +1,8 @@
 package com.softgallery.story_playground_server.config;
 
 import com.softgallery.story_playground_server.global.error.exception.EntityNotFoundException;
-import com.softgallery.story_playground_server.service.user.UserService;
-import lombok.AllArgsConstructor;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.core.Authentication;
@@ -12,6 +12,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 @Configuration
 public class WebClientConfig {
+
     @Bean
     public WebClient webClient() {
         return WebClient.builder()
@@ -20,7 +21,11 @@ public class WebClientConfig {
                 .build();
     }
 
-    public static OAuth2User getOAuth2User() {
+    public static OAuth2User getOAuth2User(HttpServletRequest request) {
+        // 세션 ID를 출력
+        String sessionId = getSessionIdFromCookies(request);
+        System.out.println("Session ID: " + sessionId);
+
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null) {
             System.out.println("Authentication is null");
@@ -34,12 +39,22 @@ public class WebClientConfig {
         return null;
     }
 
+    public static String getCurrentUserEmail(HttpServletRequest request) {
+        OAuth2User oAuth2User = getOAuth2User(request);
 
-    public static String getCurrentUserEmail() {
-        OAuth2User oAuth2User = getOAuth2User();
-
-        if(oAuth2User==null) throw new EntityNotFoundException();
+        if (oAuth2User == null) throw new EntityNotFoundException();
 
         return oAuth2User.getAttribute("email");
+    }
+
+    private static String getSessionIdFromCookies(HttpServletRequest request) {
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                if ("JSESSIONID".equals(cookie.getName())) {
+                    return cookie.getValue();
+                }
+            }
+        }
+        return null;
     }
 }

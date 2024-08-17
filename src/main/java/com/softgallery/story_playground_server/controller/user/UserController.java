@@ -25,7 +25,7 @@ public class UserController {
     }
 
     @GetMapping("/info")
-    public ResponseEntity<SuccessResponse<?>> getUserInfo() {
-        return SuccessResponse.ok(userService.getUserInfo());
+    public ResponseEntity<SuccessResponse<?>> getUserInfo(@RequestHeader("Authorization") String token) {
+        return SuccessResponse.ok(userService.getUserInfo(token));
     }
 }

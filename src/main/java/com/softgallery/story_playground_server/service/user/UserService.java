@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestHeader;
 
 import java.util.Optional;
+import java.util.UUID;
 
 @RequiredArgsConstructor
 @Service
@@ -42,12 +43,12 @@ public class UserService {
         return new UserIdDTO(newUser.getUserId());
     }
 
-    public UserInfoDTO getUserInfo() {
-        String userEmail = WebClientConfig.getCurrentUserEmail();
+    public UserInfoDTO getUserInfo(String token) {
+        UUID userId = OAuth2Service.extractMemberId(OAuth2Service.getOnlyToken(token));
 
-        System.out.println("user email!" + userEmail);
+        System.out.println("user id!" + userId);
 
-        Optional<UserEntity> safeUser = userRepository.findByEmail(userEmail);
+        Optional<UserEntity> safeUser = userRepository.findById(userId);
         if(safeUser.isEmpty()) throw new EntityNotFoundException();
 
         return UserInfoDTO.builder()
