@@ -40,7 +40,7 @@ public class StoryEntity {
 
     @OneToMany(mappedBy = "story", cascade = CascadeType.ALL, orphanRemoval = true)
     @Column(nullable = false)
-    private List<PageEntity> pages;
+    private List<ContentEntity> contents;
 
     public void changeModifiedDate() {
         this.modifiedDate = LocalDateTime.now();

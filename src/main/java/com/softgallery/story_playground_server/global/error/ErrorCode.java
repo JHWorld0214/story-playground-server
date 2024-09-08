@@ -16,6 +16,7 @@ public enum ErrorCode {
      * 401 Unauthorized
      */
     UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "리소스 접근 권한이 없습니다."),
+    UNAUTHORIZED_TOKEN(HttpStatus.UNAUTHORIZED, "토큰이 없거나 형식이 올바르지 않습니다"),
 
     /**
      * 403 Forbidden

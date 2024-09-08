@@ -8,6 +8,8 @@ public class GptConfig {
     public static final String BASE_URL = "https://api.openai.com/v1";
     public static final String GPT_URI = "/chat/completions";
 
+    public static final String FULL_GPT_URI = BASE_URL + GPT_URI;
+
 
     // DALL-E
     public static final String DALLE_URI = "/images/generations";

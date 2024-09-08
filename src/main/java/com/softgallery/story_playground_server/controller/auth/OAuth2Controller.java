@@ -1,6 +1,7 @@
 package com.softgallery.story_playground_server.controller.auth;
 
-import com.softgallery.story_playground_server.dto.session.SessionIdDTO;
+import com.softgallery.story_playground_server.dto.token.GoogleTokenDTO;
+import com.softgallery.story_playground_server.dto.token.JWTDTO;
 import com.softgallery.story_playground_server.global.common.SuccessResponse;
 import com.softgallery.story_playground_server.service.auth.OAuth2Service;
 import jakarta.servlet.http.HttpServletRequest;
@@ -20,9 +21,8 @@ public class OAuth2Controller {
     private final OAuth2Service authService;
 
     @PostMapping("/code")
-    public ResponseEntity<SuccessResponse<?>> handleGoogleLogin(@RequestBody Map<String, String> request, HttpServletRequest httpRequest) {
-        String authorizationCode = request.get("code");
-        SessionIdDTO sessionIdDTO = authService.authenticateUserWithGoogle(authorizationCode, httpRequest);
+    public ResponseEntity<SuccessResponse<?>> handleGoogleLogin(@RequestBody GoogleTokenDTO request) {
+        JWTDTO sessionIdDTO = authService.authenticateUserWithGoogle(request);
         return SuccessResponse.ok(sessionIdDTO);
     }
 }

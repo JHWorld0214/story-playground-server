@@ -17,10 +17,6 @@ public class ImageEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long imageId;
 
-    @OneToOne
-    @JoinColumn(name="page_id", nullable = false)
-    private PageEntity page;
-
     @Column(length = 1000, nullable = false)
     private String imageUrl;
 

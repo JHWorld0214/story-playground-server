@@ -18,7 +18,4 @@ public class ContentInsertDTO {
 
     @JsonProperty("story_id")
     private Long storyId;
-
-    @JsonProperty("page_id")
-    private Long pageId;
 }

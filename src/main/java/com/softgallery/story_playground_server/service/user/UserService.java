@@ -1,6 +1,5 @@
 package com.softgallery.story_playground_server.service.user;
 
-import com.softgallery.story_playground_server.config.WebClientConfig;
 import com.softgallery.story_playground_server.dto.user.UserIdDTO;
 import com.softgallery.story_playground_server.dto.user.UserInfoDTO;
 import com.softgallery.story_playground_server.dto.user.UserInsertDTO;
@@ -45,8 +44,6 @@ public class UserService {
 
     public UserInfoDTO getUserInfo(String token) {
         UUID userId = OAuth2Service.extractMemberId(OAuth2Service.getOnlyToken(token));
-
-        System.out.println("user id!" + userId);
 
         Optional<UserEntity> safeUser = userRepository.findById(userId);
         if(safeUser.isEmpty()) throw new EntityNotFoundException();

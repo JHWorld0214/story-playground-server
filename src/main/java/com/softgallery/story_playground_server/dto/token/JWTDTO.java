@@ -1,4 +1,4 @@
-package com.softgallery.story_playground_server.dto.session;
+package com.softgallery.story_playground_server.dto.token;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class SessionIdDTO {
-    @JsonProperty("session_id")
-    private String sessionId;
+public class JWTDTO {
+    @JsonProperty("jwt_token")
+    private String jwtToken;
 }

@@ -1,27 +1,19 @@
 package com.softgallery.story_playground_server.service.auth;
 
-import com.softgallery.story_playground_server.dto.session.SessionIdDTO;
+import com.softgallery.story_playground_server.dto.token.GoogleTokenDTO;
+import com.softgallery.story_playground_server.dto.token.JWTDTO;
 import com.softgallery.story_playground_server.entity.UserEntity;
-import com.softgallery.story_playground_server.global.error.exception.UnauthorizedException;
 import com.softgallery.story_playground_server.repository.UserRepository;
 import com.softgallery.story_playground_server.service.user.Social;
 import io.jsonwebtoken.*;
-import io.jsonwebtoken.impl.DefaultClaims;
-import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
-import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
-import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
@@ -31,7 +23,6 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
-import javax.security.auth.login.LoginException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
@@ -41,7 +32,6 @@ import java.util.*;
 @Transactional
 @RequiredArgsConstructor
 public class OAuth2Service {
-    private final WebClient webClient;
     private final UserRepository userRepository;
 
     @Value("${spring.security.oauth2.client.registration.google.client-id}")
@@ -66,19 +56,15 @@ public class OAuth2Service {
         staticSecretKey = secretKey;
     }
 
-    public SessionIdDTO authenticateUserWithGoogle(String authorizationCode, HttpServletRequest request) {
-        System.out.println("runned");
+    public JWTDTO authenticateUserWithGoogle(GoogleTokenDTO tokeDto) {
+        String authorizationCode = tokeDto.getCode();
         String accessToken = getAccessToken(authorizationCode);
-        System.out.println("access token out : " + accessToken);
 
         Map<String, Object> userInfo = getUserInfo(accessToken);
 
         String email = (String) userInfo.get("email");
         String name = (String) userInfo.get("name");
         String picture = (String) userInfo.get("picture");
-
-        System.out.println("user email" + email);
-        System.out.println("username" + name);
 
         if (!userRepository.existsByEmail(email)) {
             userRepository.save(UserEntity.builder()
@@ -92,7 +78,7 @@ public class OAuth2Service {
         Optional<UserEntity> safeUser = userRepository.findByEmail(email);
         if(safeUser.isEmpty()) throw new RuntimeException("No User or occur error during insert email " + email);
 
-        return new SessionIdDTO(generateToken(safeUser.get().getUserId()));
+        return new JWTDTO(generateToken(safeUser.get().getUserId()));
     }
 
     private String getAccessToken(String authorizationCode) {
@@ -100,7 +86,6 @@ public class OAuth2Service {
         try {
             decodedCode = URLDecoder.decode(authorizationCode, StandardCharsets.UTF_8.name());
         } catch (UnsupportedEncodingException e) {
-            // UTF-8이 지원되지 않는 경우는 사실상 없으므로 런타임 예외로 처리
             throw new RuntimeException("UTF-8 encoding is not supported", e);
         }
 
@@ -127,7 +112,6 @@ public class OAuth2Service {
     }
 
     private Map<String, Object> getUserInfo(String accessToken) {
-        System.out.println("access token: " + accessToken);
         RestTemplate restTemplate = new RestTemplate();
         String infoUri = "https://www.googleapis.com/oauth2/v2/userinfo";
 
