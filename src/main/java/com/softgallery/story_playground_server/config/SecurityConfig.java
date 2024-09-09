@@ -33,7 +33,8 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/", "/example", "dontopen/**", "/dontopen/visitor/submit", // 테스트 API들
                                 "/swagger-ui/**", "/v3/api-docs/**",        // 서비스 및 Swagger API들
-                                "/code", "/api/user/info", "/**"
+                                "/code", "/api/user/info",
+                                "/api/story/**", "/api/voice/**"        // service apis
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
