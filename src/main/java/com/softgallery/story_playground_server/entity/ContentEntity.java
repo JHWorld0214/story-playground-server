@@ -31,6 +31,6 @@ public class ContentEntity {
     private Role role;
 
     @ManyToOne
-    @JoinColumn(name="page_id", nullable = false)
-    private PageEntity page;
+    @JoinColumn(name="story_id", nullable = false)
+    private StoryEntity story;
 }
