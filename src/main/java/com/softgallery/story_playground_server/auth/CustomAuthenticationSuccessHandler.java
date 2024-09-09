@@ -1,6 +1,7 @@
 package com.softgallery.story_playground_server.auth;
 
 import com.softgallery.story_playground_server.entity.UserEntity;
+import com.softgallery.story_playground_server.global.error.exception.EntityNotFoundException;
 import com.softgallery.story_playground_server.repository.UserRepository;
 import com.softgallery.story_playground_server.service.user.Social;
 import jakarta.servlet.ServletException;
@@ -26,16 +27,14 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
         OAuth2AuthenticationToken oauthToken = (OAuth2AuthenticationToken) authentication;
         String social = oauthToken.getAuthorizedClientRegistrationId();
 
-        System.out.println(social);
-
         String email = oAuth2User.getAttribute("email");
         String name = oAuth2User.getAttribute("name");
         String picture = oAuth2User.getAttribute("picture");
 
-        System.out.println(picture);
-
-        Social socialName = Social.naver;
+        Social socialName=null;
         if(social.equals("google")) socialName = Social.google;
+
+        if(socialName == null) throw new EntityNotFoundException();
 
         if(!userRepository.existsByEmail(email)) {
             userRepository.save(
@@ -48,11 +47,13 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
             );
         }
 
+        String sessionId = request.getSession().getId();
+
         response.setContentType("application/json");
         response.setStatus(HttpServletResponse.SC_OK);
 
         // JSON 응답 생성
-        String jsonResponse = "{\"code\":\"200\",\"status\":\"success\",\"message\":\"Authentication successful\"}";
+        String jsonResponse = "{\"code\":\"200\",\"status\":\"success\",\"message\":\"" + sessionId +  "\"}";
         response.getWriter().write(jsonResponse);
     }
 }
