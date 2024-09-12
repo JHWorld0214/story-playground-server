@@ -5,6 +5,7 @@ import com.softgallery.story_playground_server.config.StoryConfig;
 import com.softgallery.story_playground_server.dto.content.ContentInsertDTO;
 import com.softgallery.story_playground_server.dto.content.ContentOnlyDTO;
 import com.softgallery.story_playground_server.dto.gpt.DalleInsertDTO;
+import com.softgallery.story_playground_server.dto.gpt.GPTResponseDTO;
 import com.softgallery.story_playground_server.dto.gpt.GptRequestDTO;
 import com.softgallery.story_playground_server.dto.page.PageIdDTO;
 import com.softgallery.story_playground_server.dto.story.StoryIdDTO;
@@ -121,22 +122,24 @@ public class StoryService {
                 )
                 .build();
 
-        String llmResult;
+        GPTResponseDTO llmResult;
         try {
             llmResult = webClient.post()
                     .uri(GptConfig.FULL_GPT_URI)
                     .header(GptConfig.AUTHORIZATION, GptConfig.Bearer + apiKey)
                     .bodyValue(gptRequestDTO)
                     .retrieve()
-                    .bodyToMono(String.class)
+                    .bodyToMono(GPTResponseDTO.class)
                     .block();
         } catch (WebClientResponseException ex) {
-            llmResult = "Error: " + ex.getResponseBodyAsString();
+            llmResult = null;
         }
+
+        String responseText = llmResult.getChoices().get(0).getMessage().getContent();
 
         ContentEntity content = ContentEntity.builder()
                 .createdDate(LocalDateTime.now())
-                .content(llmResult)
+                .content(responseText)
                 .role(Role.assistant)
                 .story(safeStory.get())
                 .build();
